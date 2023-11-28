@@ -1,0 +1,80 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+# Задаємо значення для змінних
+np.random.seed(1)
+n_samples = 500
+n_features = 2
+
+# Генеруємо випадкові значення для матриці ознак
+data = np.random.randint(5000, 20000, size=(n_samples, n_features))
+columns = ['Feature 1', 'Feature 2', 'Target']
+
+# Генеруємо випадкові значення для вектора цільової змінної
+vector_target = np.random.choice([0, 1], size=(n_samples, 1))
+
+# Створюємо матрицю ознак
+matrix_of_features = np.column_stack((data, vector_target))
+
+# Впорядковуємо дані в таблицю і зберігаємо в окремий файл
+df = pd.DataFrame(matrix_of_features, columns=columns)
+df.to_csv('random.csv', index=False)
+
+#  Виводимо значення
+print("Випадково згенеровані дані")
+print(pd.read_csv('random.csv'))
+
+print("Матриця ознак: ")
+print(matrix_of_features[:5])
+
+# Зчитуємо дані з файлу
+data = pd.read_csv('random.csv')
+data = data.dropna()
+
+X = data[['Feature 1', 'Feature 2']]
+y = data['Target']
+
+# Розділення даних на тренувальний та тестувальний набір
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Створюємо лінійний SVC класифікатор
+clf = SVC(kernel='linear', C=1.0)
+
+# Тренуємо класифікатор на тренувальному наборі даних
+clf.fit(X_train, y_train)
+
+# Створюється передбачення на основі отриманих даних
+y_pred = clf.predict(X_test)
+
+# Визначаємо точність моделі
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Точність: {accuracy}")
+
+# Вивід матриці неправильно класифікованих прикладів
+conf_matrix = confusion_matrix(y_test, y_pred)
+print("Матриця неправильно класифікованих прикладів")
+print(conf_matrix)
+
+# Звіт
+class_report = classification_report(y_test, y_pred)
+print("Звіт по класифікації")
+print(class_report)
+
+# Розділення даних за категоріями
+approved_category = X_test[y_test == 1]
+rejected_category = X_test[y_test == 0]
+
+# Затверджені та відхилені кредити
+plt.scatter(approved_category.iloc[:, 0], approved_category.iloc[:, 1], label='Затвердженні кредити', c='green', marker='o')
+plt.scatter(rejected_category.iloc[:, 0], rejected_category.iloc[:, 1], label='Відхилени кредити', c='orange', marker='X')
+
+# Графік
+plt.title('Затвердження кредиту')
+plt.xlabel('Ознака 1')
+plt.ylabel('Ознака 2')
+plt.legend(loc='best')
+plt.show()
